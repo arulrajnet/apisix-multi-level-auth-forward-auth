@@ -145,3 +145,21 @@ This is a demonstration setup. For production use, consider:
 - Implementing proper cookie security
 - Setting appropriate session timeouts
 - Using a proper OAuth2 provider instead of htpasswd authentication
+
+
+## Author
+
+<p align="center">
+  <a href="https://x.com/arulrajnet">
+    <img src="https://avatars0.githubusercontent.com/u/834529?s=100" alt="Arulraj V" width="100" height="100" style="border-radius: 50%;">
+  </a>
+  <br>
+  <strong>Arul</strong>
+  <br>
+  <a href="https://x.com/arulrajnet">
+    <img src="https://img.shields.io/badge/Follow-%40arulrajnet-1DA1F2?style=for-the-badge&logo=x&logoColor=white" alt="Follow @arulrajnet on X">
+  </a>
+  <a href="https://github.com/arulrajnet">
+    <img src="https://img.shields.io/badge/GitHub-arulrajnet-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub @arulrajnet">
+  </a>
+</p>
