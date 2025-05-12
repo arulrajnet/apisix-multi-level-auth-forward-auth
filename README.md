@@ -162,4 +162,7 @@ This is a demonstration setup. For production use, consider:
   <a href="https://github.com/arulrajnet">
     <img src="https://img.shields.io/badge/GitHub-arulrajnet-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub @arulrajnet">
   </a>
+  <a href="https://linkedin.com/in/arulrajnet">
+    <img src="https://custom-icon-badges.demolab.com/badge/LinkedIn-arulrajnet-0A66C2?style=for-the-badge&logo=linkedin-white&logoColor=white" alt="LinkedIn @arulrajnet">
+  </a>
 </p>
