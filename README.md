@@ -151,7 +151,7 @@ This is a demonstration setup. For production use, consider:
 
 <p align="center">
   <a href="https://x.com/arulrajnet">
-    <img src="https://avatars0.githubusercontent.com/u/834529?s=100" alt="Arulraj V" width="100" height="100" style="border-radius: 50%;">
+    <img src="https://github.com/arulrajnet.png?size=100" alt="Arulraj V" width="100" height="100" style="border-radius: 50%;" class="avatar-user">
   </a>
   <br>
   <strong>Arul</strong>
