@@ -1,0 +1,150 @@
+
+configs:
+  upstream.conf.template:
+    content: |
+      server {
+        listen 80;
+        server_name localhost;
+        location / {
+          root /usr/share/nginx/html;
+          index index.html;
+        }
+      }
+  index.html:
+    content: |
+      <!doctype html>
+      <html>
+        <head>
+          <title>Hello nginx</title>
+          <meta charset="utf-8" />
+        </head>
+        <body>
+          <h1>
+            Login Successfully
+          </h1>
+          <p>
+            To view the vault, please visit <a href="http://localhost/vault?rd=/vault/">http://localhost/vault/</a>
+          </p>
+        </body>
+      </html>
+
+  vault_index.html:
+    content: |
+      <!doctype html>
+      <html>
+        <head>
+          <title>Hello nginx</title>
+          <meta charset="utf-8" />
+        </head>
+        <body>
+          <h1>
+            You are in the vault
+          </h1>
+          <p>
+            This is a secret vault that is only accessible after authentication twice.
+          </p>
+        </body>
+      </html>
+
+services:
+
+  apisix:
+    image: apache/apisix:3.12.0-debian
+    restart: on-failure
+    user: root
+    volumes:
+      - ${PWD}/config.yaml:/usr/local/apisix/conf/config.yaml
+      - ${PWD}/apisix.yaml:/usr/local/apisix/conf/apisix.yaml
+    ports:
+      # Web - Proxy
+      - 80:80
+      # Metrics
+      - 9091
+    environment:
+      APISIX_STAND_ALONE: "true"
+
+  home:
+    image: nginx:1.25.2
+    ports:
+      - 80
+    configs:
+      - source: upstream.conf.template
+        target: /etc/nginx/templates/upstream.conf.template
+      - source: index.html
+        target: /usr/share/nginx/html/index.html
+
+  secret_vault:
+    image: nginx:1.25.2
+    ports:
+      - 80
+    configs:
+      - source: upstream.conf.template
+        target: /etc/nginx/templates/upstream.conf.template
+      - source: vault_index.html
+        target: /usr/share/nginx/html/vault/index.html
+
+  # Running behind a reverse proxy. Act as a forward auth proxy.
+  oauth2_proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.9.0
+    command:
+      - --client-id=dummy-client-id
+      - --client-secret=dummy-client-secret
+      # 7 days
+      - --cookie-expire=168h
+      - --cookie-name=_session
+      - --cookie-refresh=30m
+      - --cookie-secret=cbiGJkwts9Ye6XD2Pbt_L1jLcipIZBDMfMuqxDWRbeQ=
+      - --custom-sign-in-logo=https://avatars.githubusercontent.com/u/4029521?v=4
+      - --custom-templates-dir=/templates
+      # This is required if not using a https entrypoint
+      - --cookie-secure=false
+      - --email-domain=*
+      - --footer=Company Login Page
+      - --htpasswd-file=/.htpasswd
+      - --http-address=0.0.0.0:4181
+      - --pass-access-token=true
+      - --pass-authorization-header=true
+      - --provider=google
+      - --proxy-prefix=/auth
+      - --reverse-proxy=true
+      - --set-authorization-header
+      - --set-xauthrequest
+      # don't set traefik error page.
+      - --skip-provider-button=false
+      - --upstream=static://202
+    volumes:
+      - ${PWD}/.htpasswd:/.htpasswd
+      - ${PWD}/templates:/templates
+    expose:
+      - 4181
+
+  # Act as a proxy for vault
+  oauth2_proxy_for_vault:
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.9.0
+    command:
+      - --client-id=dummy-client-id
+      - --client-secret=dummy-client-secret
+      # 7 days
+      - --cookie-expire=168h
+      - --cookie-name=_vault_session
+      - --cookie-refresh=30m
+      - --cookie-secret=cbiGJkwts9Ye6XD2Pbt_L1jLcipIZBDMfMuqxDWRbeQ=
+      - --custom-sign-in-logo=https://cdn-icons-png.flaticon.com/256/6772/6772279.png
+      - --custom-templates-dir=/templates
+      # This is required if not using a https entrypoint
+      - --cookie-secure=false
+      - --email-domain=*
+      - --footer=Vault Login Page
+      - --htpasswd-file=/.htpasswd
+      - --http-address=0.0.0.0:4181
+      - --pass-access-token=true
+      - --pass-authorization-header=true
+      - --provider=google
+      - --proxy-prefix=/vault
+      - --skip-provider-button=false
+      - --upstream=http://secret_vault:80
+    volumes:
+      - ${PWD}/.htpasswd_vault:/.htpasswd
+      - ${PWD}/templates:/templates
+    expose:
+      - 4181

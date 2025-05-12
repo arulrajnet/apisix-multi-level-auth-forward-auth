@@ -1,0 +1,97 @@
+global_rules:
+  -
+    id: 1
+    plugins:
+      response-rewrite:
+          headers:
+            set:
+              Server: 'DummyServerName'
+
+services:
+  -
+    id: 1
+    upstream:
+      nodes:
+        home:80: 1
+      type: roundrobin
+  -
+    id: 2
+    upstream:
+      nodes:
+        oauth2_proxy:4181: 1
+      type: roundrobin
+  -
+    id: 3
+    upstream:
+      nodes:
+        oauth2_proxy_for_vault:4181: 1
+      type: roundrobin
+
+routes:
+  -
+    id: 1
+    uris:
+      - /
+      - /*
+    service_id: 1
+    methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - OPTIONS
+      - HEAD
+      - PATCH
+    priority: 20
+    plugins:
+      forward-auth:
+        uri: http://oauth2_proxy:4181/auth
+        request_headers:
+          - Cookie
+          - X-Forwarded-Host
+          - X-Forwarded-Port
+        upstream_headers:
+          - X-Auth-Request-User
+          - X-Auth-Request-Email
+          - X-Forwarded-User
+          - X-Forwarded-Groups
+          - X-Forwarded-Email
+          - X-Forwarded-Preferred-Username
+        client_headers:
+          - Location
+          - Content-Type
+
+  -
+    id: 2
+    uris:
+      - /auth
+      - /auth/*
+    service_id: 2
+    priority: 100
+
+  -
+    id: 3
+    uris:
+      - /vault
+      - /vault/*
+    service_id: 3
+    priority: 100
+    plugins:
+      forward-auth:
+        uri: http://oauth2_proxy:4181/auth
+        request_headers:
+          - Cookie
+          - X-Forwarded-Host
+          - X-Forwarded-Port
+        upstream_headers:
+          - X-Auth-Request-User
+          - X-Auth-Request-Email
+          - X-Forwarded-User
+          - X-Forwarded-Groups
+          - X-Forwarded-Email
+          - X-Forwarded-Preferred-Username
+        client_headers:
+          - Location
+          - Content-Type
+
+#END
